@@ -16,15 +16,19 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    fetch(DBHelper.DATABASE_URL)
-    .then(response => response.json())
-    .then(response => {
-      const restaurants = response;
-      return callback(null, restaurants)
-    })
-    .catch(error => {
-      return callback(error, null)
-    })
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', DBHelper.DATABASE_URL);
+    xhr.onload = () => {
+      if (xhr.status === 200) { // Got a success response from server!
+        const json = JSON.parse(xhr.responseText);
+        const restaurants = json.restaurants;
+        callback(null, restaurants);
+      } else { // Oops!. Got an error from server.
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    };
+    xhr.send();
   }
 
   /**
@@ -146,11 +150,7 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    if (restaurant.photograph === undefined) {
-      return (`/img/${restaurant.id}.jpg`);
-    } else {
-      return (`/img/${restaurant.photograph}.jpg`);
-    }
+    return (`/img/${restaurant.photograph}`);
   }
 
   /**
